@@ -27,7 +27,7 @@ you to manage products, suppliers, and inventory stock through a command-line in
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
+   git clone https://github.com/daniosoriov/inventory_system.git
    cd inventory_system
    ```
 
