@@ -1,4 +1,7 @@
+import logging
 from functools import wraps
+
+logger = logging.getLogger()
 
 
 def handle_exceptions(func):
@@ -12,8 +15,7 @@ def handle_exceptions(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            # logger.error(f"An error occurred in {func.__name__}: {e}")
-            print(f"An error occurred in {func.__name__}: {e}")
+            logger.error(f"An error occurred in {func.__name__}: {e}")
             return None
 
     return wrapper
