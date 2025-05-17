@@ -1,6 +1,9 @@
+import enum
 from typing import List
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, Enum
+from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from datetime import datetime
 
 
 class Base(DeclarativeBase):
@@ -77,8 +80,59 @@ class Product(Base):
     sku: Mapped[str] = mapped_column(String(50), nullable=False, unique=True, index=True)
     price: Mapped[float] = mapped_column(nullable=False)
     supplier_id: Mapped[int] = mapped_column(ForeignKey('supplier.id'))
+    stock: Mapped[int] = mapped_column(default=0, nullable=False)
 
     supplier: Mapped['Supplier'] = relationship(back_populates='products')
 
+    transactions: Mapped[List['ProductTransaction']] = relationship(
+        'ProductTransaction',
+        back_populates='product',
+        cascade='all, delete-orphan'
+    )
+
     def __repr__(self):
         return f"<Product(id={self.id!r}, name={self.name!r}, description={self.description!r}, sku={self.sku!r}, price={self.price!r}, supplier_id={self.supplier_id!r})>"
+
+
+class OperationType(enum.Enum):
+    ADD = 'ADD'
+    SUBTRACT = 'SUBTRACT'
+    SALE = 'SALE'
+
+
+class ProductTransaction(Base):
+    """
+    Represents a product transaction within the system.
+
+    The ProductTransaction class is used to log and manage transactions related to
+    products.
+    These transactions include operations such as adding or removing
+    product quantities.
+    Each transaction keeps track of the product involved, the type of operation performed,
+    the quantity affected, and the date of the operation.
+
+    :ivar id: Unique identifier for the product transaction.
+    :type id: int
+    :ivar product_id: Identifier of the associated product.
+    :type product_id: int
+    :ivar operation: The type of operation performed on the product.
+    :type operation: OperationType
+    :ivar quantity: The quantity affected by the transaction.
+    :type quantity: int
+    :ivar date: Timestamp when the transaction was performed.
+    :type date: datetime
+    :ivar product: The product associated with the transaction.
+    :type product: Product
+    """
+    __tablename__ = 'product_transaction'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey('product.id'))
+    operation: Mapped[OperationType] = mapped_column(Enum(OperationType), nullable=False)
+    quantity: Mapped[int] = mapped_column(nullable=False)
+    date: Mapped[datetime] = mapped_column(default=func.now(), nullable=False)
+
+    product: Mapped['Product'] = relationship(back_populates='transactions')
+
+    def __repr__(self):
+        return f"<ProductTransaction(id={self.id!r}, product_id={self.product_id!r}, operation={self.operation!r}, quantity={self.quantity!r}, date={self.date!r})>"
