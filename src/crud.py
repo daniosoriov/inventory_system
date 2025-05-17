@@ -29,7 +29,6 @@ def update_supplier(session: Session, supplier_id: int, name: str = None, email:
                     phone_number: str = None) -> Supplier | None:
     supplier = session.query(Supplier).filter_by(id=supplier_id).first()
     if not supplier:
-        logger.warning(f'Supplier {supplier_id} not found for update')
         return None
     if name:
         supplier.name = name
@@ -45,7 +44,6 @@ def delete_supplier(session: Session, supplier_id: int) -> bool:
     supplier = session.query(Supplier).filter_by(id=supplier_id).first()
     if supplier:
         session.delete(supplier)
-        logger.info(f'Deleted supplier {supplier_id}')
         return True
     return False
 
@@ -80,7 +78,6 @@ def update_product(session: Session, product_id: int, name: str = None, descript
                    price: float = None) -> Product | None:
     product = session.query(Product).filter_by(id=product_id).first()
     if not product:
-        logger.warning(f'Product {product_id} not found for update')
         return None
 
     if name:
@@ -99,7 +96,6 @@ def delete_product(session: Session, product_id: int) -> bool:
     product = session.query(Product).filter_by(id=product_id).first()
     if product:
         session.delete(product)
-        logger.info(f'Deleted product {product_id}')
         return True
     return False
 
