@@ -93,7 +93,7 @@ class Product(Base):
     )
 
     def __repr__(self):
-        return f"<Product(id={self.id!r}, name={self.name!r}, description={self.description!r}, sku={self.sku!r}, price={self.price!r}, supplier_id={self.supplier_id!r})>"
+        return f"<Product(id={self.id!r}, name={self.name!r}, description={self.description!r}, sku={self.sku!r}, price={self.price!r}, supplier_id={self.supplier_id!r}, stock={self.stock!r})>"
 
 
 class OperationType(enum.Enum):
