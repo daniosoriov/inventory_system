@@ -1,13 +1,15 @@
+import logging
+from sqlalchemy.orm import Session
 from decorators import handle_exceptions
-from models import Supplier, Product
-from orm_setup import SessionLocal
+from models import Supplier, Product, ProductTransaction, OperationType
+from src.models import Supplier
 
-session = SessionLocal()
+logger = logging.getLogger()
 
 
 # Supplier operations
 @handle_exceptions
-def create_supplier(name: str, email: str, phone_number: str) -> Supplier:
+def create_supplier(session: Session, name: str, email: str, phone_number: str) -> Supplier:
     with session.begin():
         new_supplier = Supplier(
             name=name,
@@ -15,19 +17,19 @@ def create_supplier(name: str, email: str, phone_number: str) -> Supplier:
             phone_number=phone_number
         )
         session.add(new_supplier)
-        session.commit()
         return new_supplier
 
 
 @handle_exceptions
-def get_supplier(supplier_id: int) -> Supplier | None:
+def get_supplier(session: Session, supplier_id: int) -> Supplier | None:
     with session.begin():
         supplier = session.query(Supplier).filter_by(id=supplier_id).first()
         return supplier
 
 
 @handle_exceptions
-def update_supplier(supplier_id: int, name: str = None, email: str = None, phone_number: str = None) -> Supplier | None:
+def update_supplier(session: Session, supplier_id: int, name: str = None, email: str = None,
+                    phone_number: str = None) -> Supplier | None:
     with session.begin():
         supplier = session.query(Supplier).filter_by(id=supplier_id).first()
         if supplier:
@@ -37,25 +39,23 @@ def update_supplier(supplier_id: int, name: str = None, email: str = None, phone
                 supplier.email = email
             if phone_number:
                 supplier.phone_number = phone_number
-            session.commit()
             return supplier
         return None
 
 
 @handle_exceptions
-def delete_supplier(supplier_id: int) -> bool:
+def delete_supplier(session: Session, supplier_id: int) -> bool:
     with session.begin():
         supplier = session.query(Supplier).filter_by(id=supplier_id).first()
         if supplier:
             session.delete(supplier)
-            session.commit()
             return True
         return False
 
 
 # Product operations
 @handle_exceptions
-def create_product(name: str, description: str, sku: str, price: float, supplier_id: int) -> Product:
+def create_product(session: Session, name: str, description: str, sku: str, price: float, supplier_id: int) -> Product:
     with session.begin():
         new_product = Product(
             name=name,
@@ -65,19 +65,18 @@ def create_product(name: str, description: str, sku: str, price: float, supplier
             supplier_id=supplier_id
         )
         session.add(new_product)
-        session.commit()
         return new_product
 
 
 @handle_exceptions
-def get_product(product_id: int) -> Product | None:
+def get_product(session: Session, product_id: int) -> Product | None:
     with session.begin():
         product = session.query(Product).filter_by(id=product_id).first()
         return product
 
 
 @handle_exceptions
-def update_product(product_id: int, name: str = None, description: str = None, sku: str = None,
+def update_product(session: Session, product_id: int, name: str = None, description: str = None, sku: str = None,
                    price: float = None) -> Product | None:
     with session.begin():
         product = session.query(Product).filter_by(id=product_id).first()
@@ -90,17 +89,57 @@ def update_product(product_id: int, name: str = None, description: str = None, s
                 product.sku = sku
             if price:
                 product.price = price
-            session.commit()
             return product
         return None
 
 
 @handle_exceptions
-def delete_product(product_id: int) -> bool:
+def delete_product(session: Session, product_id: int) -> bool:
     with session.begin():
         product = session.query(Product).filter_by(id=product_id).first()
         if product:
             session.delete(product)
-            session.commit()
             return True
         return False
+
+
+# Transaction operations
+def _create_transaction(session: Session, product_id: int, operation: OperationType,
+                        quantity: int) -> ProductTransaction:
+    new_transaction = ProductTransaction(
+        product_id=product_id,
+        operation=operation,
+        quantity=quantity
+    )
+    session.add(new_transaction)
+    return new_transaction
+
+
+@handle_exceptions
+def get_transaction(session: Session, transaction_id: int) -> ProductTransaction | None:
+    with session.begin():
+        transaction = session.query(ProductTransaction).filter_by(id=transaction_id).first()
+        return transaction
+
+
+@handle_exceptions
+def update_stock(
+        session: Session,
+        product_id: int,
+        quantity: int,
+        operation: OperationType) -> bool:
+    with session.begin():
+        product = session.query(Product).filter_by(id=product_id).first()
+        if not product:
+            message = f'Product {product_id} not found'
+            logger.warning(message)
+            raise ValueError(message)
+
+        if operation in [OperationType.SUBTRACT, OperationType.SALE] and product.stock < quantity:
+            message = f'Not enough stock for product {product_id}. Available: {product.stock}, Requested: {quantity}'
+            logger.error(message)
+            raise ValueError(message)
+
+        product.stock += quantity if operation == OperationType.ADD else -quantity
+        _create_transaction(session, product_id, operation=operation, quantity=quantity)
+        return True
