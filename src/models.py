@@ -71,6 +71,8 @@ class Product(Base):
     :type supplier_id: int
     :ivar supplier: Relationship to the Supplier entity representing the supplier of the product.
     :type supplier: Supplier
+    :ivar stock: The current stock level of the product. It defaults to 0 and cannot be null.
+    :type stock: int
     """
     __tablename__ = 'product'
 
