@@ -9,7 +9,7 @@ from models import Base
 from decorators import handle_exceptions
 
 
-@handle_exceptions
+@handle_exceptions()
 def setup_database():
     engine = create_engine(
         f"postgresql+psycopg2://{os.environ['DB_USER']}:{os.environ['DB_PASS']}@{os.environ['DB_HOST']}:{os.environ['DB_PORT']}/{os.environ['DB_NAME']}",
