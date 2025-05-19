@@ -20,13 +20,7 @@ def read_supplier(supplier_id: int, db: Session = Depends(get_db)):
 def create_supplier_endpoint(supplier: SupplierCreate, db: Session = Depends(get_db)) -> dict[str, Supplier]:
     try:
         result = create_supplier(db, name=supplier.name, email=supplier.email, phone_number=supplier.phone_number)
-        db.commit()
-        db.refresh(result)
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="Supplier with that email already exists")
     except Exception as e:
-        db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
     return {'supplier': result}
 

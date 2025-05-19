@@ -1,17 +1,32 @@
+import logging
+
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from decorators import handle_exceptions
-from models import Supplier, Product, ProductTransaction, OperationType
+from models import Supplier
+
+logger = logging.getLogger()
 
 
 @handle_exceptions()
 def create_supplier(session: Session, name: str, email: str, phone_number: str) -> Supplier:
-    new_supplier = Supplier(
-        name=name,
-        email=email,
-        phone_number=phone_number
-    )
-    session.add(new_supplier)
-    return new_supplier
+    try:
+        new_supplier = Supplier(
+            name=name,
+            email=email,
+            phone_number=phone_number
+        )
+        session.add(new_supplier)
+        session.commit()
+        session.refresh(new_supplier)
+        return new_supplier
+    except IntegrityError:
+        session.rollback()
+        raise ValueError(f"Supplier with email {email} already exists.")
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error creating supplier: {e}")
+        raise ValueError("An error occurred while creating the supplier.")
 
 
 @handle_exceptions()
