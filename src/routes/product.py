@@ -28,11 +28,13 @@ def create_product_endpoint(product: ProductCreate, db: Session = Depends(get_db
 
 @router.put("/{product_id}", name='Update Product')
 def update_product_endpoint(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
-    updated = update_product(db, product_id, name=product.name, description=product.description,
-                             sku=product.sku, price=product.price)
-    db.commit()
-    if not updated:
-        raise HTTPException(status_code=404, detail="product not found")
+    try:
+        updated = update_product(db, product_id, name=product.name, description=product.description,
+                                 sku=product.sku, price=product.price)
+        if not updated:
+            raise HTTPException(status_code=404, detail="product not found")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return {'message': 'product updated successfully'}
 
 

@@ -52,15 +52,25 @@ def update_product(session: Session, product_id: int, name: str = None, descript
     if not product:
         return None
 
-    if name:
-        product.name = name
-    if description:
-        product.description = description
-    if sku:
-        product.sku = sku
-    if price:
-        product.price = price
-    return product
+    try:
+        if name:
+            product.name = name
+        if description:
+            product.description = description
+        if sku:
+            product.sku = sku
+        if price:
+            product.price = price
+        session.commit()
+        session.refresh(product)
+        return product
+    except IntegrityError:
+        session.rollback()
+        raise ValueError(f"Product with SKU {sku} already exists.")
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error updating product: {e}")
+        raise ValueError("An error occurred while updating the product.")
 
 
 @handle_exceptions()
