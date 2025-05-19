@@ -40,7 +40,7 @@ def update_product_endpoint(product_id: int, product: ProductUpdate, db: Session
 @router.put("/{product_id}/stock", name='Update Product Stock')
 def update_product_stock_endpoint(product_id: int, product: ProductUpdateStock, db: Session = Depends(get_db)):
     try:
-        updated = update_stock(db, product_id, quantity=product.quantity, operation=product.operation)
+        update_stock(db, product_id, quantity=product.quantity, operation=product.operation)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {'message': 'product stock updated successfully'}

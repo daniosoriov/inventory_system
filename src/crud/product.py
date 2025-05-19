@@ -111,7 +111,7 @@ def update_stock(
         session: Session,
         product_id: int,
         quantity: int,
-        operation: OperationType) -> bool:
+        operation: OperationType) -> None:
     product = session.query(Product).filter_by(id=product_id).first()
     if not product:
         message = f'Product {product_id} not found'
@@ -125,4 +125,3 @@ def update_stock(
     product.stock += quantity if operation == OperationType.ADD else -quantity
     _create_transaction(session, product_id, operation=operation, quantity=quantity)
     session.commit()
-    return True
