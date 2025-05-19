@@ -1,7 +1,9 @@
 import logging
+
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from decorators import handle_exceptions
-from models import Supplier, Product, ProductTransaction, OperationType
+from models import Product, ProductTransaction, OperationType
 
 logger = logging.getLogger()
 
@@ -14,17 +16,27 @@ def create_product(session: Session,
                    sku: str,
                    price: float,
                    stock: int,
-                   supplier_id: int) -> Product:
-    new_product = Product(
-        name=name,
-        description=description,
-        sku=sku,
-        price=price,
-        stock=stock,
-        supplier_id=supplier_id,
-    )
-    session.add(new_product)
-    return new_product
+                   supplier_id: int) -> Product | None:
+    try:
+        new_product = Product(
+            name=name,
+            description=description,
+            sku=sku,
+            price=price,
+            stock=stock,
+            supplier_id=supplier_id,
+        )
+        session.add(new_product)
+        session.commit()
+        session.refresh(new_product)
+        return new_product
+    except IntegrityError:
+        session.rollback()
+        raise ValueError(f"Product with SKU {sku} already exists.")
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error creating product: {e}")
+        raise ValueError("An error occurred while creating the product.")
 
 
 @handle_exceptions()

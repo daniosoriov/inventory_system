@@ -21,13 +21,7 @@ def create_product_endpoint(product: ProductCreate, db: Session = Depends(get_db
     try:
         result = create_product(db, name=product.name, description=product.description, sku=product.sku,
                                 price=product.price, stock=product.stock, supplier_id=product.supplier_id)
-        db.commit()
-        db.refresh(result)
-    except IntegrityError as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="SKU already exists")
-    except Exception as e:
-        db.rollback()
+    except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {'product': result}
 
