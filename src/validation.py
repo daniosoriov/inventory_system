@@ -19,6 +19,24 @@ class SupplierCreate(BaseModel):
     }
 
 
+class SupplierUpdate(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    phone_number: str | None = None
+
+    model_config = {
+        'json_schema_extra': {
+            'examples': [
+                {
+                    'name': 'Updated Supplier Name',
+                    'email': 'test@test.com',
+                    'phone_number': '+1234567890'
+                }
+            ]
+        }
+    }
+
+
 class Supplier(BaseModel):
     id: int
     name: str
