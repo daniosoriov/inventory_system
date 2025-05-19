@@ -1,16 +1,22 @@
 # Inventory Management System
 
-A simple yet powerful inventory management system built with Python, PostgreSQL, and SQLAlchemy. This application allows
-you to manage products, suppliers, and inventory stock through a command-line interface.
+A simple yet powerful inventory management system built with Python, FastAPI, PostgreSQL, and SQLAlchemy.
+This application allows you to manage products, suppliers, and inventory stock through both a
+RESTful API and a command-line interface.
 
 ## Features
 
+- **RESTful API with FastAPI**
+    - Modern, fast API with automatic OpenAPI documentation
+    - Intuitive endpoint structure for all operations
+    - Proper HTTP status codes and error responses
+
 - **Supplier Management**
-    - Create, retrieve, update, and delete suppliers
+    - Create, retrieve, update, and delete suppliers via API endpoints
     - Track supplier details (name, email, phone number)
 
 - **Product Management**
-    - Create, retrieve, update, and delete products
+    - Create, retrieve, update, and delete products via API endpoints
     - Track product details (name, description, SKU, price)
     - Associate products with suppliers
 
@@ -22,6 +28,7 @@ you to manage products, suppliers, and inventory stock through a command-line in
 - **Robust Error Handling**
     - Comprehensive logging system
     - Exception handling with detailed error messages
+    - Structured JSON responses for errors
 
 ## Installation
 
@@ -61,53 +68,109 @@ you to manage products, suppliers, and inventory stock through a command-line in
    python -c "from src.orm_setup import setup_database; setup_database()"
    ```
 
-## Usage
+## API Usage
 
-The application provides a command-line interface for managing inventory. Here are some example commands:
+The application provides a RESTful API built with FastAPI for managing inventory. You can interact with the API using
+any HTTP client.
 
-### Supplier Management
+### Running the API Server
+
+```bash
+# Start the FastAPI server
+fastapi run src/main.py --host
+```
+
+The API will be available at `http://localhost:8000`.
+
+### API Documentation
+
+FastAPI automatically generates interactive API documentation:
+
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+### API Endpoints
+
+#### Supplier Management
+
+```bash
+# Create a new supplier
+POST /suppliers/
+{
+  "name": "Supplier A",
+  "email": "supplier@example.com",
+  "phone_number": "+123456789"
+}
+
+# Get supplier details
+GET /suppliers/1
+
+# Update supplier details
+PUT /suppliers/1
+{
+  "name": "Updated Supplier",
+  "email": "new_email@example.com",
+  "phone_number": "+123456789"
+}
+
+# Delete a supplier
+DELETE /suppliers/1
+```
+
+#### Product Management
+
+```bash
+# Create a new product
+POST /products/
+{
+  "name": "Laptop",
+  "description": "High-performance laptop",
+  "sku": "LTP123",
+  "price": 1500,
+  "supplier_id": 1,
+  "stock": 10
+}
+
+# Get product details
+GET /products/1
+
+# Update product details
+PUT /products/1
+{
+  "name": "Updated Laptop",
+  "description": "High-performance laptop",
+  "sku": "LTP123",
+  "price": 1600
+}
+
+# Delete a product
+DELETE /products/1
+```
+
+#### Inventory Management
+
+```bash
+# Update product stock (add, subtract, or record a sale)
+PUT /products/1/stock
+{
+  "quantity": 20,
+  "operation": "SALE"
+}
+```
+
+### Command-Line Interface
+
+The application also provides a command-line interface for managing inventory. Here are some example commands:
 
 ```bash
 # Create a new supplier
 python src/cli.py create_supplier --name "Supplier A" --email "supplier@example.com" --phone_number "+123456789"
 
-# Get supplier details
-python src/cli.py get_supplier --id 1
-
-# Update supplier details
-python src/cli.py update_supplier --id 1 --name "Updated Supplier" --email "new_email@example.com"
-
-# Delete a supplier
-python src/cli.py delete_supplier --id 1
-```
-
-### Product Management
-
-```bash
 # Create a new product
 python src/cli.py create_product --name "Laptop" --description "High-performance laptop" --sku "LTP123" --price 1500 --supplier_id 1 --stock 10
 
-# Get product details
-python src/cli.py get_product --id 1
-
-# Update product details
-python src/cli.py update_product --id 1 --name "Updated Laptop" --price 1600
-
-# Delete a product
-python src/cli.py delete_product --id 1
-```
-
-### Inventory Management
-
-```bash
-# Add stock to a product
+# Update product stock
 python src/cli.py update_stock --product_id 1 --quantity 20 --operation ADD
-
-# Remove stock from a product
-python src/cli.py update_stock --product_id 1 --quantity 5 --operation SUBTRACT
-
-# Record a sale
-python src/cli.py update_stock --product_id 1 --quantity 2 --operation SALE
 ```
 
 ## Project Structure
@@ -117,11 +180,25 @@ inventory_system/
 ├── logs/                  # Log files directory
 │   └── logs.log           # Application logs
 ├── src/
+│   ├── crud/              # CRUD operations
+│   │   ├── __init__.py
+│   │   ├── product.py     # Product CRUD operations
+│   │   └── supplier.py    # Supplier CRUD operations
+│   ├── routes/            # FastAPI route definitions
+│   │   ├── __init__.py
+│   │   ├── product.py     # Product API endpoints
+│   │   └── supplier.py    # Supplier API endpoints
+│   ├── validation/        # Pydantic models for validation
+│   │   ├── __init__.py
+│   │   ├── product.py     # Product validation models
+│   │   └── supplier.py    # Supplier validation models
+│   ├── utils/             # Utility functions
+│   │   └── db.py          # Database utility functions
 │   ├── cli.py             # Command-line interface
-│   ├── crud.py            # CRUD operations
-│   ├── database.py        # Direct database connection
+│   ├── database.py        # Database connection
 │   ├── decorators.py      # Error handling decorators
 │   ├── logger.py          # Logging configuration
+│   ├── main.py            # FastAPI application entry point
 │   ├── models.py          # SQLAlchemy ORM models
 │   └── orm_setup.py       # Database connection setup
 ├── .env                   # Environment variables
