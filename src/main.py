@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from orm_setup import SessionLocal
-from crud import get_supplier, create_supplier as create_supplier_crud, update_supplier as update_supplier_crud
-from validation import SupplierCreate, SupplierUpdate, Supplier
+from crud import (get_supplier,
+                  create_supplier as create_supplier_crud,
+                  update_supplier as update_supplier_crud,
+                  delete_supplier as delete_supplier_crud)
+from validation.supplier import SupplierCreate, SupplierUpdate, Supplier
 
 app = FastAPI()
 
@@ -41,3 +44,12 @@ def update_supplier(supplier_id: int, supplier: SupplierUpdate, db: Session = De
     if not updated:
         raise HTTPException(status_code=404, detail="Supplier not found")
     return {'message': 'Supplier updated successfully'}
+
+
+@app.delete("/suppliers/{supplier_id}")
+def delete_supplier(supplier_id: int, db: Session = Depends(get_db)):
+    deleted = delete_supplier_crud(db, supplier_id)
+    db.commit()
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    return {'message': 'Supplier deleted successfully'}
