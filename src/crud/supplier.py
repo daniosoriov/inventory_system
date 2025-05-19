@@ -41,13 +41,24 @@ def update_supplier(session: Session, supplier_id: int, name: str = None, email:
     supplier = session.query(Supplier).filter_by(id=supplier_id).first()
     if not supplier:
         return None
-    if name:
-        supplier.name = name
-    if email:
-        supplier.email = email
-    if phone_number:
-        supplier.phone_number = phone_number
-    return supplier
+
+    try:
+        if name:
+            supplier.name = name
+        if email:
+            supplier.email = email
+        if phone_number:
+            supplier.phone_number = phone_number
+        session.commit()
+        session.refresh(supplier)
+        return supplier
+    except IntegrityError:
+        session.rollback()
+        raise ValueError(f"Supplier with email {email} already exists.")
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error updating supplier: {e}")
+        raise ValueError("An error occurred while updating the supplier.")
 
 
 @handle_exceptions()
