@@ -8,7 +8,6 @@ from models import Product, ProductTransaction, OperationType
 logger = logging.getLogger()
 
 
-# Product operations
 @handle_exceptions()
 def create_product(session: Session,
                    name: str,
