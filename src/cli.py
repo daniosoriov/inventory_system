@@ -3,8 +3,8 @@ import logging.config
 
 from orm_setup import SessionLocal
 from models import OperationType
-from crud import (create_supplier, get_supplier, update_supplier, delete_supplier,
-                  create_product, get_product, update_product, delete_product, update_stock)
+from crud.supplier import create_supplier, get_supplier, update_supplier, delete_supplier
+from crud.product import create_product, get_product, update_product, delete_product, update_stock
 
 from logger import LOGGING_CONF
 
