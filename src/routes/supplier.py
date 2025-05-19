@@ -16,7 +16,7 @@ def read_supplier(supplier_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", name='Create Supplier')
-def create_supplier_endpoint(supplier: SupplierCreate, db: Session = Depends(get_db)) -> Supplier:
+def create_supplier_endpoint(supplier: SupplierCreate, db: Session = Depends(get_db)) -> dict[str, Supplier]:
     result = create_supplier(db, name=supplier.name, email=supplier.email, phone_number=supplier.phone_number)
     db.commit()
     db.refresh(result)
