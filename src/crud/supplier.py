@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from decorators import handle_exceptions
 from models import Supplier
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 @handle_exceptions()
