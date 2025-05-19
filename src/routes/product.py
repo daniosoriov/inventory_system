@@ -21,7 +21,7 @@ def create_product_endpoint(product: ProductCreate, db: Session = Depends(get_db
     try:
         result = create_product(db, name=product.name, description=product.description, sku=product.sku,
                                 price=product.price, stock=product.stock, supplier_id=product.supplier_id)
-    except ValueError as e:
+    except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {'product': result}
 
@@ -33,7 +33,7 @@ def update_product_endpoint(product_id: int, product: ProductUpdate, db: Session
                                  sku=product.sku, price=product.price)
         if not updated:
             raise HTTPException(status_code=404, detail="product not found")
-    except ValueError as e:
+    except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {'message': 'product updated successfully'}
 
@@ -49,8 +49,10 @@ def update_product_stock_endpoint(product_id: int, product: ProductUpdateStock, 
 
 @router.delete("/{product_id}", name='Delete Product')
 def delete_product_endpoint(product_id: int, db: Session = Depends(get_db)):
-    deleted = delete_product(db, product_id)
-    db.commit()
-    if not deleted:
-        raise HTTPException(status_code=404, detail="product not found")
+    try:
+        deleted = delete_product(db, product_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="product not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return {'message': 'product deleted successfully'}

@@ -75,11 +75,17 @@ def update_product(session: Session, product_id: int, name: str = None, descript
 
 @handle_exceptions()
 def delete_product(session: Session, product_id: int) -> bool:
-    product = session.query(Product).filter_by(id=product_id).first()
-    if product:
-        session.delete(product)
-        return True
-    return False
+    try:
+        product = session.query(Product).filter_by(id=product_id).first()
+        if product:
+            session.delete(product)
+            session.commit()
+            return True
+        return False
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error deleting product: {e}")
+        raise ValueError("An error occurred while deleting the product.")
 
 
 # Transaction operations
