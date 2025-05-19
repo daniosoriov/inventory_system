@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Depends
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from crud.product import (get_product, create_product, update_product, delete_product, update_stock)
 from validation.product import ProductCreate, ProductUpdate, ProductUpdateStock, Product
