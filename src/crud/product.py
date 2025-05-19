@@ -109,7 +109,6 @@ def update_stock(
     product = session.query(Product).filter_by(id=product_id).first()
     if not product:
         message = f'Product {product_id} not found'
-        logger.warning(message)
         raise ValueError(message)
 
     if operation in [OperationType.SUBTRACT, OperationType.SALE] and product.stock < quantity:
@@ -119,4 +118,5 @@ def update_stock(
 
     product.stock += quantity if operation == OperationType.ADD else -quantity
     _create_transaction(session, product_id, operation=operation, quantity=quantity)
+    session.commit()
     return True
