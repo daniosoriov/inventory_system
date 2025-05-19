@@ -38,8 +38,10 @@ def update_supplier_endpoint(supplier_id: int, supplier: SupplierUpdate, db: Ses
 
 @router.delete("/{supplier_id}", name='Delete Supplier')
 def delete_supplier_endpoint(supplier_id: int, db: Session = Depends(get_db)):
-    deleted = delete_supplier(db, supplier_id)
-    db.commit()
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Supplier not found")
+    try:
+        deleted = delete_supplier(db, supplier_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Supplier not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return {'message': 'Supplier deleted successfully'}

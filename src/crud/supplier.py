@@ -63,8 +63,14 @@ def update_supplier(session: Session, supplier_id: int, name: str = None, email:
 
 @handle_exceptions()
 def delete_supplier(session: Session, supplier_id: int) -> bool:
-    supplier = session.query(Supplier).filter_by(id=supplier_id).first()
-    if supplier:
-        session.delete(supplier)
-        return True
-    return False
+    try:
+        supplier = session.query(Supplier).filter_by(id=supplier_id).first()
+        if supplier:
+            session.delete(supplier)
+            session.commit()
+            return True
+        return False
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error deleting supplier: {e}")
+        raise ValueError("An error occurred while deleting the supplier.")
